@@ -1,0 +1,72 @@
+---
+title: "Plots"
+author: "Nneoma Ugwu"
+date: "12/30/2020"
+output: html_document
+---
+
+```{r, message=FALSE}
+library(ggplot2) #grammar of graphics (gg) used to make plots 
+library(TSstudio) #for plotting time series (didn't use)
+library(lubridate)# working with dates 
+library(gridExtra)
+library(gtable)
+
+```
+
+```{r}
+#Load the data sets from COVID-19 Platform 
+National <- read.csv("~/Desktop/Thesis/Thesis/data/National.csv", sep = ",", header = TRUE) 
+State <- read.csv("~/Desktop/Thesis/Thesis/data/State.csv", sep = ",", header = TRUE) 
+County <- read.csv("~/Desktop/Thesis/Thesis/data/County.csv", sep = ",", header = TRUE) 
+```
+
+```{r Cleaning data, results=FALSE}
+#data cleaning
+National <- data.frame(National) #converts it to df
+National$date <- mdy(National$date) #converts from character to date
+State$date <- mdy(State$date) #converts from character to date
+County$date <- mdy(County$date) #converts from character to date
+
+MD<- State[which(State$STNAME == "MD"),]#Create subsets for different states
+DC<- State[which(State$STNAME == "DC"),]#Create subsets for different states
+
+```
+
+```{r, echo=FALSE}
+
+Overlay_Trips<- ggplot() +
+  geom_line(data = National, aes(x = date, y = Trips.person, color = "black")) + 
+   geom_line(data = MD, aes(x = date, y = Trips.person, color = "red")) +
+   geom_line(data = DC, aes(x = date, y = Trips.person, color = "blue"))+
+  scale_x_date(date_breaks = "month", date_labels = "%b")+
+  labs(title = "Overlay of Trips per person for USA,MD, and DC", color= "Legend")+
+  annotate("label", y = 4.5, x=as.Date("2020-07-10") , size=3, label = "Prior to the lockdown there were more trips/person\n in DC than national average but after the reopening people\n in DC take less trips than national average. ")+
+  scale_color_identity(name = "legend",
+                          breaks = c("black", "red", "blue"),
+                          labels = c("USA", "MD", "DC"),
+                          guide = "legend")+
+  theme(plot.title = element_text(hjust = 0.5))
+Overlay_Trips
+```
+
+```{r, echo=FALSE}
+
+Work_nonework_Trips<- ggplot() +
+  geom_line(data = National, aes(x = date, y = Work.trips.person, color = "black")) + 
+   geom_line(data = MD, aes(x = date, y = Work.trips.person, color = "red")) +
+   geom_line(data = DC, aes(x = date, y = Work.trips.person, color = "blue"))+
+  geom_line(data = National, aes(x = date, y = Non.work.trips.person, color = "black")) + 
+   geom_line(data = MD, aes(x = date, y = Non.work.trips.person, color = "red")) +
+   geom_line(data = DC, aes(x = date, y = Non.work.trips.person, color = "blue"))+
+  scale_x_date(date_breaks = "month", date_labels = "%b")+
+  labs(title = "Work trips vs Non-work Trips", color= "Legend", x= "Date", y= "Work trips                       Non-Work trips")+
+  annotate("label", y =4, x=as.Date("2020-07-10") , size=3, label = "Non-work have countinued to increase\n while work trips remained stable ")+
+  scale_color_identity(name = "legend",
+                          breaks = c("black", "red", "blue"),
+                          labels = c("USA", "MD", "DC"),
+                          guide = "legend")+
+  theme(plot.title = element_text(hjust = 0.5))
+Work_nonework_Trips
+```
+
